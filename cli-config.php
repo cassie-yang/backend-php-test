@@ -16,11 +16,11 @@ $config->setProxyDir('models/Proxies');
 $config->setProxyNamespace('Proxies');
 
 $conn = array(
-    'driver'    => 'pdo_mysql',
-    'host'      => '127.0.0.1',
-    'dbname'    => 'ac_todos',
-    'user'      => 'root',
-    'password'  => '11111111',
+    'driver'    => $app['config']['database']['driver'],
+    'host'      => $app['config']['database']['host'],
+    'dbname'    => $app['config']['database']['dbname'],
+    'user'      => $app['config']['database']['user'],
+    'password'  => $app['config']['database']['password'],
     'charset'   => 'utf8',
 );
 
