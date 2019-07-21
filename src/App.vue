@@ -1,60 +1,138 @@
 <template>
-  <div id="app">
-    <img src="./assets/logo.png">
-    <h1>{{ msg }}</h1>
-    <h2>Essential Links</h2>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank">Twitter</a></li>
-    </ul>
-    <h2>Ecosystem</h2>
-    <ul>
-      <li><a href="http://router.vuejs.org/" target="_blank">vue-router</a></li>
-      <li><a href="http://vuex.vuejs.org/" target="_blank">vuex</a></li>
-      <li><a href="http://vue-loader.vuejs.org/" target="_blank">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank">awesome-vue</a></li>
-    </ul>
-  </div>
+  <el-main class="todo-form">
+    <el-row v-bind:gutter="20">
+      <el-col v-bind:span="18">
+        <el-input v-model="newTask"></el-input>
+      </el-col>
+      <el-col v-bind:span="6" class="el-col--right">
+        <el-button v-bind:disabled="!newTask"
+                   v-on:click="addTask()"
+                   type="primary"
+                   plain>
+          Add Task
+        </el-button>
+      </el-col>
+    </el-row>
+    <el-row v-bind:gutter="20" class="todo-form__list">
+      <div v-for="task in tasks" class="todo-form__list-item">
+        <el-col v-bind:span="16"
+                class="todo-form__list-item__text"
+                v-bind:class="[task.completed_at ? 'todo-form__list-item__text--finished' : '']">
+          {{task.description}}
+        </el-col>
+        <el-col v-bind:span="8" class="el-col--right">
+          <el-button type="success"
+                     v-on:click="markTaskDone(task.id)"
+                     v-if="!task.completed_at"
+                     plain>
+            Done
+          </el-button>
+          <el-button type="warning"
+                     v-on:click="markTaskUndone(task.id)"
+                     v-if="task.completed_at"
+                     plain>
+            Undone
+          </el-button>
+          <el-button type="danger"
+                     v-on:click="deleteTask(task.id)"
+                     plain>
+            Delete
+          </el-button>
+        </el-col>
+      </div>
+    </el-row>
+  </el-main>
 </template>
-
 <script>
-export default {
-  name: 'app',
-  data () {
-    return {
-      msg: 'Welcome to Your Vue.js App'
+  import axios     from 'axios';
+
+  export default {
+    data() {
+      return {
+        newTask: '',
+        tasks: null,
+      };
+    },
+    mounted() {
+      this.getTasks();
+    },
+    methods: {
+      getTasks() {
+        axios.get('/todos/json')
+                .then(response => {
+                  this.tasks = response.data;
+                })
+                .catch(error => {
+                  console.log(error);
+                });
+      },
+      addTask() {
+        axios.post('/todo/add', {description: this.newTask})
+                .then(response => {
+                 this.getTasks();
+                  this.newTask = '';
+                })
+                .catch(error => {
+                  console.log(error);
+                });
+      },
+      deleteTask(id) {
+        axios.post('/todo/delete/' + id)
+                .then(response => {
+                  this.getTasks();
+                })
+                .catch(error => {
+                  console.log(error);
+                });
+      },
+      markTaskDone(id) {
+        axios.post('/todo/done/' + id)
+                .then(response => {
+                  this.getTasks();
+                })
+                .catch(error => {
+                  console.log(error);
+                });
+      },
+      markTaskUndone(id) {
+        axios.post('/todo/undone/' + id)
+                .then(response => {
+                  this.getTasks();
+                })
+                .catch(error => {
+                  console.log(error);
+                });
+      }
+    }
+  };
+</script>
+<style lang="scss" scoped>
+  .el-col--right {
+    text-align: right;
+  }
+
+  .todo-form {
+    &__list {
+      margin-top: 30px;
+      border-top: solid 2px #ddd;
+      border-bottom: solid 1px #ddd;
+    }
+
+    &__list-item {
+      border-bottom: solid 1px #ddd;
+      display: block;
+      overflow: hidden;
+      padding-top: 5px;
+      padding-bottom: 5px;
+
+      &__text {
+        padding: 5px 0;
+        font-size: 17px;
+
+        &--finished {
+          text-decoration: line-through;
+        }
+      }
     }
   }
-}
-</script>
-
-<style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-
-h1, h2 {
-  font-weight: normal;
-}
-
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-
-a {
-  color: #42b983;
-}
 </style>

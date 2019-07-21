@@ -82,14 +82,16 @@ $app->get('/todos/json', function () use ($app) {
 });
 
 $app->post('/todo/add', function (Request $request) use ($app) {
-    if (null === $user = $app['session']->get('user')) {
-        return $app->redirect('/login');
-    }
-    $user_id = $user['id'];
+    //    if (null === $user = $app['session']->get('user')) {
+    //        return $app->redirect('/login');
+    //    }
+    $user_id = 1;
     $em = $app['orm.em'];
     $user = $em->find(User::class, $user_id);
 
-    $description = $request->get('description');
+
+    $data = json_decode($request->getContent());
+    $description = $data->description;
     $errors = $app['validator']->validate($description, new Assert\NotBlank());
     if (count($errors) > 0) {
         return $app->json(array('message' => 'description is required'), 422);
@@ -114,6 +116,36 @@ $app->match('/todo/delete/{id}', function ($id) use ($app) {
         $em = $app['orm.em'];
         $todo = $em->find(Todo::class, $id);
         $em->remove($todo);
+        $em->flush();
+
+        return $app->json(array('message' => 'Todo is deleted'), 200);
+    }
+});
+
+$app->post('/todo/done/{id}', function ($id) use ($app) {
+    if (null === $user = $app['session']->get('user')) {
+        return $app->redirect('/login');
+    }
+
+    if($id) {
+        $em = $app['orm.em'];
+        $todo = $em->find(Todo::class, $id);
+        $todo->setCompletedAt(new DateTime());
+        $em->flush();
+
+        return $app->json(array('message' => 'Todo is deleted'), 200);
+    }
+});
+
+$app->post('/todo/undone/{id}', function ($id) use ($app) {
+    if (null === $user = $app['session']->get('user')) {
+        return $app->redirect('/login');
+    }
+
+    if($id) {
+        $em = $app['orm.em'];
+        $todo = $em->find(Todo::class, $id);
+        $todo->setCompletedAt(null);
         $em->flush();
 
         return $app->json(array('message' => 'Todo is deleted'), 200);
