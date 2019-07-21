@@ -50,19 +50,11 @@ $app->get('/todo/{id}', function ($id) use ($app) {
     }
 
     if ($id){
-        $sql = "SELECT * FROM todos WHERE id = '$id'";
-        $todo = $app['db']->fetchAssoc($sql);
-
-        return $app['twig']->render('todo.html', [
-            'todo' => $todo,
-        ]);
+        $em = $app['orm.em'];
+        $todo = $em->find(Todo::class, $id);
+        return $app->json($todo, 200);
     } else {
-        $sql = "SELECT * FROM todos WHERE user_id = '${user['id']}'";
-        $todos = $app['db']->fetchAll($sql);
-
-        return $app['twig']->render('todos.html', [
-            'todos' => $todos,
-        ]);
+        return $app['twig']->render('todos.html');
     }
 })
 ->value('id', null);
@@ -74,10 +66,19 @@ $app->get('/todo/{id}/json', function ($id) use ($app) {
     }
     if ($id){
         $em = $app['orm.em'];
-        $todoRepository = $em->getRepository(Todo::class);
-        $todo = $todoRepository->find($id);
+        $todo = $em->find(Todo::class, $id);
         return $app->json($todo, 200);
     }
+});
+
+$app->get('/todos/json', function () use ($app) {
+    if (null === $user = $app['session']->get('user')) {
+        return $app->redirect('/login');
+    }
+    $user_id = $user['id'];
+    $em = $app['orm.em'];
+    $user = $em->find(User::class, $user_id);
+    return $app->json($user->getTodos()->toArray(), 200);
 });
 
 $app->post('/todo/add', function (Request $request) use ($app) {
