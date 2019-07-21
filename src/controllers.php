@@ -1,6 +1,7 @@
 <?php
 
 use App\Entity\Todo;
+use App\Entity\User;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -83,25 +84,37 @@ $app->post('/todo/add', function (Request $request) use ($app) {
     if (null === $user = $app['session']->get('user')) {
         return $app->redirect('/login');
     }
-
     $user_id = $user['id'];
+    $em = $app['orm.em'];
+    $user = $em->find(User::class, $user_id);
+
     $description = $request->get('description');
     $errors = $app['validator']->validate($description, new Assert\NotBlank());
     if (count($errors) > 0) {
         return $app->json(array('message' => 'description is required'), 422);
     } else {
-        $sql = "INSERT INTO todos (user_id, description) VALUES ('$user_id', '$description')";
-        $app['db']->executeUpdate($sql);
+        $todo = new Todo();
+        $todo->setUser($user);
+        $todo->setDescription($description);
+        $em->persist($todo);
+        $em->flush();
 
-        return $app->redirect('/todo');
+        return $app->json(array('message' => 'New todo is added'), 201);
     }
 });
 
 
 $app->match('/todo/delete/{id}', function ($id) use ($app) {
+    if (null === $user = $app['session']->get('user')) {
+        return $app->redirect('/login');
+    }
 
-    $sql = "DELETE FROM todos WHERE id = '$id'";
-    $app['db']->executeUpdate($sql);
+    if($id) {
+        $em = $app['orm.em'];
+        $todo = $em->find(Todo::class, $id);
+        $em->remove($todo);
+        $em->flush();
 
-    return $app->redirect('/todo');
+        return $app->json(array('message' => 'Todo is deleted'), 200);
+    }
 });
