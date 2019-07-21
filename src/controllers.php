@@ -1,5 +1,6 @@
 <?php
 
+use App\Entity\Todo;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -65,6 +66,18 @@ $app->get('/todo/{id}', function ($id) use ($app) {
 })
 ->value('id', null);
 
+
+$app->get('/todo/{id}/json', function ($id) use ($app) {
+    if (null === $user = $app['session']->get('user')) {
+        return $app->redirect('/login');
+    }
+    if ($id){
+        $em = $app['orm.em'];
+        $todoRepository = $em->getRepository(Todo::class);
+        $todo = $todoRepository->find($id);
+        return $app->json($todo, 200);
+    }
+});
 
 $app->post('/todo/add', function (Request $request) use ($app) {
     if (null === $user = $app['session']->get('user')) {

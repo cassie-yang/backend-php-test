@@ -92,15 +92,6 @@ class Todo implements JsonSerializable
         return $this->user;
     }
 
-    public function jsonSerialize()
-    {
-        return array(
-            'id'   => $this->id,
-            'user_id' => $this->user->getId(),
-            'description' => $this->description
-        );
-    }
-
     /**
      * Set completedAt.
      *
@@ -124,4 +115,15 @@ class Todo implements JsonSerializable
     {
         return $this->completed_at;
     }
+
+    public function jsonSerialize()
+    {
+        return array(
+            'id'   => $this->id,
+            'user_id' => $this->user->getId(),
+            'description' => $this->description,
+            'completed_at' => $this->completed_at
+        );
+    }
+
 }
