@@ -1,5 +1,6 @@
 database:
-    host    : localhost
+    driver  : pdo_mysql
+    host    : 127.0.0.1
     dbname  : ac_todos
     user    : root
-    password:
+    password: 11111111
