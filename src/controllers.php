@@ -82,10 +82,10 @@ $app->get('/todos/json', function () use ($app) {
 });
 
 $app->post('/todo/add', function (Request $request) use ($app) {
-    //    if (null === $user = $app['session']->get('user')) {
-    //        return $app->redirect('/login');
-    //    }
-    $user_id = 1;
+    if (null === $user = $app['session']->get('user')) {
+        return $app->redirect('/login');
+    }
+    $user_id = $user['id'];
     $em = $app['orm.em'];
     $user = $em->find(User::class, $user_id);
 
