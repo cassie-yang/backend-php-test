@@ -133,7 +133,7 @@ $app->post('/todo/done/{id}', function ($id) use ($app) {
         $todo->setCompletedAt(new DateTime());
         $em->flush();
 
-        return $app->json(array('message' => 'Todo is deleted'), 200);
+        return $app->json(array('message' => 'Todo is marked done'), 200);
     }
 });
 
@@ -148,6 +148,6 @@ $app->post('/todo/undone/{id}', function ($id) use ($app) {
         $todo->setCompletedAt(null);
         $em->flush();
 
-        return $app->json(array('message' => 'Todo is deleted'), 200);
+        return $app->json(array('message' => 'Todo is marked undone'), 200);
     }
 });
